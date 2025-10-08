@@ -7,16 +7,15 @@
 
 <style>
 :root{
-  /* Dark UI palette inspired by your mockup */
-  --bg:#0b1020;          /* deep navy */
-  --panel:#121934;       /* card surface */
+  --bg:#0b1020;
+  --panel:#121934;
   --panel-2:#0f1730;
-  --text:#e8ecff;        /* near-white */
-  --muted:#a6b2d6;       /* secondary text */
+  --text:#e8ecff;
+  --muted:#a6b2d6;
   --border:#24305b;
-  --accent:#6d5dfc;      /* purple */
-  --accent-2:#3aa0ff;    /* blue */
-  --accent-3:#9a8bff;    /* soft violet */
+  --accent:#6d5dfc;
+  --accent-2:#3aa0ff;
+  --accent-3:#9a8bff;
   --chip:#1b2446;
   --chip-border:#2a3770;
   --shadow:0 14px 30px rgba(0,0,0,.35);
@@ -92,7 +91,7 @@ li small{color:var(--muted)}
       <div class="logo">T</div>
       <div>
         <h1>TYFYS Objection Coach</h1>
-        <div class="sub">Urgent, kind objection handling. Runs locally in your browser.</div>
+        <div class="sub">Urgent, kind objection handling — runs locally in your browser.</div>
       </div>
     </div>
 
@@ -101,7 +100,7 @@ li small{color:var(--muted)}
         <input id="pw" class="pw" type="password" placeholder="Optional passphrase (leave blank to skip)" />
         <select id="model" class="select">
           <option value="Llama-3.2-3B-Instruct-q4f32_1-MLC" selected>Llama-3.2-3B (default)</option>
-          <option value="Gemma-2-2B-it-q4f32_1-MLC">Gemma-2 2B</option>
+          <option value="Gemma-2-2B-it-q4f32_1-MLC">Gemma-2-2B</option>
         </select>
       </div>
 
@@ -126,7 +125,6 @@ li small{color:var(--muted)}
   </div>
 
 <script type="module">
-  // ---------- UI refs ----------
   const stat = document.getElementById('stat');
   const prog = document.getElementById('prog');
   const progWrap = document.getElementById('progWrap');
@@ -191,60 +189,26 @@ li small{color:var(--muted)}
   await initEngine(modelSel.value);
   modelSel.onchange = async ()=>{ go.disabled=true; await initEngine(modelSel.value); };
 
-  // ---------- Prompt: assumptive, urgent, kind ----------
+  // ---------- Enhanced Persona Prompt ----------
   const SYS = `
-You are a VA-disability objection coach for Thank You For Your Service (TYFYS).
-Tone: urgent but kind, never pushy or arrogant. Use **assumptive next steps** that reduce friction NOW.
-If a spouse/family/rep is mentioned, **assume alignment is helpful** and propose a same-day 3-way call or immediate scheduling.
-Return HTML only in this structure:
+You are a 20-year sales veteran who has mastered the one-call close through empathy, truth, and leadership.
+You are kind, calm, and sincere—never pushy—but you are also confident and clear about the value of taking action now.
+You specialize in working with U.S. veterans seeking to increase their VA disability rating or get rated for the first time.
+You are prior service yourself, and you waited too long to file for your own disability, missing out on years of compensation.
+You know firsthand the cost of delay, and you help veterans avoid that mistake by making informed decisions today.
+
+Your superpower is uncovering hidden or unspoken objections with compassion and curiosity.
+You listen deeply, validate concerns, and guide veterans toward clarity and confidence.
+You show value by connecting outcomes (financial relief, stability, peace of mind) to the veteran’s goals, showing that the outcome far outweighs the small investment.
+
+Tone: urgent but kind, assumptive and forward-moving, never arrogant or high-pressure.
+If a spouse or third party is mentioned, welcome their involvement and propose an immediate 3-way call or same-day follow-up.
+
+Return your answer as structured HTML:
 
 <div class="bubble ai reply">
-  <p><strong>Acknowledge:</strong> <span>one empathetic sentence.</span></p>
-  <p><strong>Clarify:</strong> <span>one question that advances the decision.</span></p>
+  <p><strong>Acknowledge:</strong> one empathetic sentence.</p>
+  <p><strong>Clarify:</strong> one natural question that pulls out the real reason for hesitation.</p>
   <p><strong>Offer:</strong></p>
   <ul>
-    <li>Option A: <span>assumptive immediate action (e.g., “Perfect—let’s loop your wife in now. I can add her to a 3-way call while we’re here.”).</span></li>
-    <li>Option B: <span>near-term fallback with urgency (e.g., “If now isn’t ideal, I’ll book a quick three-way for this afternoon or tomorrow morning—what time works?”).</span></li>
-  </ul>
-</div>
-
-Keep ≤120 words. No legal advice. Speakable phrasing.
-`;
-
-  async function generate(snippet,matches){
-    const ctx = matches.map(m=>`Objection: ${m.objection}\nBestReply: ${m.rebuttal}\nProof: ${m.proof||""}`).join("\n\n");
-    const res = await engine.chat.completions.create({
-      messages:[
-        {role:"system",content:SYS},
-        {role:"user",content:`Context:\n${ctx}\n\nTranscript:\n${snippet}\n\nCoach reply:`}
-      ],
-      temperature:0.45, max_tokens:220
-    });
-    return res.choices[0].message.content;
-  }
-
-  // ---------- Click ----------
-  go.onclick = async ()=>{
-    if(!engine){ out.innerHTML='<div class="bubble">Model still loading.</div>'; return; }
-    const pw=document.getElementById('pw').value.trim();
-    if(pw && pw!=='TYFYS2025'){ out.innerHTML='<div class="bubble">Access denied.</div>'; return; }
-    const snippet=document.getElementById('snippet').value.trim();
-    if(!snippet){ out.innerHTML='<div class="bubble">Enter a snippet.</div>'; return; }
-    const tags=document.getElementById('tags').value.trim();
-
-    const picks=topK(snippet,tags,3);
-    matchesDiv.innerHTML = `<h3>Top matches</h3><ol>`+
-      picks.map(m=>`<li><b>${m.objection||'Untitled'}</b><br><small>${m.rebuttal||''}</small></li>`).join('')+
-      `</ol>`;
-
-    out.innerHTML='<div class="bubble">Thinking…</div>';
-    try{
-      const html = await generate(snippet,picks);
-      out.innerHTML = html;
-    }catch(e){
-      out.innerHTML='<div class="bubble">AI error: '+e.message+'</div>';
-    }
-  };
-</script>
-</body>
-</html>
+    <li>Option A: assumptive, encouraging immediate action (e.g., “Perfect—it’s important that yo
