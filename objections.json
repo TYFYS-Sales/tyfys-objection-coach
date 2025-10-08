@@ -2,14 +2,187 @@
   {
     "objection": "I don't have the money for this.",
     "tags": ["financial","pricing","stall"],
-    "rebuttal": "Totally fair. Are we talking cash flow or ROI? If cash flow, we can stage work so you pay as evidence moves. If ROI, I’ll show outcomes from stronger medical evidence and your right to pause before deeper work.",
-    "proof": "Written scope, staged steps, HIPAA releases; no legal services. Focus on medical evidence and C&P prep."
+    "rebuttal": "Totally fair. Is the concern cash flow or ROI? If cash flow, we can stage work so payments match progress. If ROI, I’ll show typical outcomes from stronger medical evidence and your right to pause before deeper work.",
+    "proof": "Written scope, staged milestones, transparent fees; HIPAA releases; focus on medical evidence and C&P prep. No legal services."
   },
   {
-    "objection": "Why pay when VSOs are free?",
+    "objection": "The fee is too high.",
+    "tags": ["financial","pricing"],
+    "rebuttal": "Understood. Would a line-item view help? You’ll see exactly what you’re buying: records, private DBQs/IMEs, and C&P coaching. If we remove steps, I’ll show tradeoffs so you choose.",
+    "proof": "Itemized scope with deliverables and timelines; option to phase tasks; no long-term lock-ins before evidence work."
+  },
+  {
+    "objection": "Can I pay after I get approved?",
+    "tags": ["financial","pricing"],
+    "rebuttal": "We’re not contingency. We build evidence upfront. We can split work into phases so you pay per completed step. Would that solve it?",
+    "proof": "Phase 1: records + triage; Phase 2: clinician review/DBQ; Phase 3: submission readiness + C&P prep."
+  },
+  {
+    "objection": "I don't want to waste money if it doesn't work.",
+    "tags": ["financial","risk"],
+    "rebuttal": "Makes sense. We start with a risk/benefit screen before any large step. If indicators are weak, we stop or adjust. Want that assessment first?",
+    "proof": "Triage against rating criteria; objective evidence focus; proceed only if benefits outweigh risks."
+  },
+  {
+    "objection": "Why pay when VSOs and DAVs are free?",
     "tags": ["financial","vso","competition"],
-    "rebuttal": "VSOs file claims. We focus on private medical evidence and exam prep. Many veterans use both. Want a side-by-side?",
-    "proof": "Private DBQs/IMEs, records gathering, narrative letters, C&P coaching; we don’t replace VSOs or give legal advice."
+    "rebuttal": "VSOs file claims. We focus on private medical evidence and exam prep. Many veterans use both. Want a side-by-side so you decide?",
+    "proof": "Private DBQs/IMEs, records gathering, nexus support, and C&P coaching; we don’t replace VSOs or give legal advice."
+  },
+  {
+    "objection": "Lawyers do this for a percentage, why not them?",
+    "tags": ["financial","lawyer","competition"],
+    "rebuttal": "Lawyers focus on appeals and representation. We’re an evidence and prep service pre-decision. If an attorney is better for your stage, I’ll say so.",
+    "proof": "Scope limited to evidence development and coaching; no legal representation; referral-friendly if appeal counsel is needed."
+  },
+  {
+    "objection": "How do I know this isn't a scam?",
+    "tags": ["trust","legitimacy","security"],
+    "rebuttal": "Smart question. You get written scope, references, and no guarantees of outcome—only deliverables. Want policy docs and sample reports?",
+    "proof": "Contracts, HIPAA practices, secure document handling, audit trail of each step."
+  },
+  {
+    "objection": "Why should I trust you over the VA, a VSO, or a lawyer?",
+    "tags": ["trust","competition"],
+    "rebuttal": "You don’t have to choose. VSOs file. Lawyers argue. We strengthen medical evidence and exam prep. Use us alongside them or not at all—your call.",
+    "proof": "Complementary role; evidence quality and C&P readiness; transparent boundaries; no legal advice."
+  },
+  {
+    "objection": "What makes you qualified to help me?",
+    "tags": ["trust","credentials"],
+    "rebuttal": "We specialize in evidence assembly and C&P prep. I can show you clinician credentials, sample DBQs, and outcomes from similar cases. Want that packet?",
+    "proof": "Clinician network experience, structured templates, checklists mapped to rating criteria."
+  },
+  {
+    "objection": "Are you actually veterans?",
+    "tags": ["trust","background"],
+    "rebuttal": "Some on our team are, some are not. Either way you get the same process and evidence standards. Would you like a quick team profile?",
+    "proof": "Process-first model with verified clinicians and standardized deliverables."
+  },
+  {
+    "objection": "How do I know my information is safe?",
+    "tags": ["trust","security","privacy"],
+    "rebuttal": "We use HIPAA-compliant tools and signed releases. Access is limited and logged. Want our privacy policy and data map?",
+    "proof": "HIPAA releases, encrypted storage, least-privilege access, documented retention schedule."
+  },
+  {
+    "objection": "I don't want to risk losing what I already have.",
+    "tags": ["fear","risk","rating"],
+    "rebuttal": "Valid. We screen for reduction risk before any filing. If risk is non-trivial, we pause or narrow the claim. Want a conservative plan?",
+    "proof": "Stability check, evidence strength review, file only with favorable indicators."
+  },
+  {
+    "objection": "What if my rating goes down?",
+    "tags": ["fear","risk","rating"],
+    "rebuttal": "We avoid reckless changes. We only proceed when documentation favors you. If not, we hold and target safer improvements.",
+    "proof": "Pre-filing risk matrix; focus on objective findings and functional impact documentation."
+  },
+  {
+    "objection": "I don't want to make things worse with the VA.",
+    "tags": ["fear","risk"],
+    "rebuttal": "Understood. Our approach is respectful, evidence-based, and within VA rules. No aggressive language or over-claiming.",
+    "proof": "Clinically grounded narratives, criterion-based DBQs, accurate history, exam prep guidelines."
+  },
+  {
+    "objection": "I don't want to give the wrong answer and mess things up.",
+    "tags": ["fear","exam","prep"],
+    "rebuttal": "That’s common. We coach you to describe symptoms accurately without minimizing or exaggerating. Want the C&P prep sheet?",
+    "proof": "C&P do/don’t guide; examples tied to rating criteria; rehearsal questions."
+  },
+  {
+    "objection": "I'm afraid to reopen my claim.",
+    "tags": ["fear","history"],
+    "rebuttal": "We can review your file first. If reopening is risky, we won’t file. If favorable, we narrow scope to the strongest issues.",
+    "proof": "File review, missing-evidence audit, targeted strategy before any submission."
+  },
+  {
+    "objection": "Why does this take so long?",
+    "tags": ["time","process","expectations"],
+    "rebuttal": "Two clocks: our evidence timeline and the VA’s queue. We control evidence speed, not the VA. Want a week-by-week plan so you see steady progress?",
+    "proof": "Milestones with target dates: records, clinician review/DBQ, readiness, C&P prep."
+  },
+  {
+    "objection": "How long until I see results?",
+    "tags": ["time","expectations"],
+    "rebuttal": "Evidence build can be weeks. VA decision timing varies by backlog. You’ll see deliverables each step so you know where you stand.",
+    "proof": "Progress tracker; each deliverable uploaded for review; submission date recorded."
+  },
+  {
+    "objection": "Why is it so hard to get an appointment?",
+    "tags": ["time","access","clinicians"],
+    "rebuttal": "Clinician schedules and records lead time. We queue records early and keep multiple clinician options to shorten waits.",
+    "proof": "Parallel records requests; alternate provider list; priority slots when documentation is complete."
+  },
+  {
+    "objection": "I've been denied so many times, I don't want to go through it again.",
+    "tags": ["time","history","burnout"],
+    "rebuttal": "Let’s analyze prior denials and plug the evidence gaps before anything else. If we can’t improve the record, we won’t waste your time.",
+    "proof": "Denial letter mapping to criteria; missing evidence checklist; only file with stronger documentation."
+  },
+  {
+    "objection": "Other soldiers deserve it more.",
+    "tags": ["self-doubt","mindset","ethics"],
+    "rebuttal": "Benefits are based on your documented impairment, not comparisons. May I ask which symptom limits you most today so we match evidence correctly?",
+    "proof": "Ratings follow criteria on functional impact and severity; no zero-sum pool."
+  },
+  {
+    "objection": "I'm not that bad off.",
+    "tags": ["self-doubt","mindset"],
+    "rebuttal": "Many minimize symptoms. We measure impact on work, sleep, and daily life. If the record doesn’t support a change, we won’t file.",
+    "proof": "Function questionnaires, clinician findings, and criteria alignment."
+  },
+  {
+    "objection": "I've learned to live with it.",
+    "tags": ["self-doubt","mindset"],
+    "rebuttal": "Coping is good, but ratings reflect impairment, not suffering style. If impairment meets criteria, you earned the benefit.",
+    "proof": "Evidence ties to CFR criteria; objective tests and consistent history."
+  },
+  {
+    "objection": "I don't want 100% because I still want to work.",
+    "tags": ["self-doubt","rating","employment"],
+    "rebuttal": "Understood. We don’t chase numbers. We document what’s true. You control what to claim and when.",
+    "proof": "Strategy respects employment goals; claim scope can be limited."
+  },
+  {
+    "objection": "I'm older now—what's the point?",
+    "tags": ["self-doubt","motivation"],
+    "rebuttal": "If criteria are met, benefits can improve quality of life and healthcare. We only proceed if evidence supports you.",
+    "proof": "Age isn’t the factor; documented severity and impact are."
+  },
+  {
+    "objection": "The system is rigged. It's not worth trying.",
+    "tags": ["self-doubt","hopelessness"],
+    "rebuttal": "It’s slow, not rigged. Strong documentation changes outcomes. We’ll show you exactly what was missing and how we address it.",
+    "proof": "Gap analysis vs. criteria; targeted DBQs and records; C&P prep."
+  },
+  {
+    "objection": "I already tried doing it myself for years.",
+    "tags": ["burnout","history"],
+    "rebuttal": "You did the hard part. Let us handle evidence gaps and logistics. If we don’t see a path, we won’t push a filing.",
+    "proof": "Structured evidence build; clinician network; milestone tracker."
+  },
+  {
+    "objection": "The VA never listens.",
+    "tags": ["burnout","trust"],
+    "rebuttal": "They respond to documented criteria. We organize the record so the rater sees the linkage clearly.",
+    "proof": "Criterion-mapped DBQs, concise summaries, and cross-referenced exhibits."
+  },
+  {
+    "objection": "It's a headache to deal with all the paperwork.",
+    "tags": ["burnout","admin"],
+    "rebuttal": "We do the heavy lifting: requests, follow-ups, and packaging. You review before submission.",
+    "proof": "Document checklist, status updates, and prepared packets ready for upload."
+  },
+  {
+    "objection": "Nothing ever changes. It's all a waste of time.",
+    "tags": ["burnout","hopelessness"],
+    "rebuttal": "Change happens when the record matches criteria. If we can’t make the record stronger, we stop. If we can, we proceed.",
+    "proof": "Before/after evidence examples; criteria alignment plan; stop-go gates."
+  },
+  {
+    "objection": "I'm tired of fighting this battle.",
+    "tags": ["burnout","mindset"],
+    "rebuttal": "We’ll shoulder the process. Your role is simple reviews and one prep session before the exam.",
+    "proof": "Project plan with few veteran tasks; single-session C&P coaching; status reports."
   }
 ]
-
