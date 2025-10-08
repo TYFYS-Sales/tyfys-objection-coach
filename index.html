@@ -7,88 +7,92 @@
 
 <style>
 :root{
-  /* Palette from the "6" image */
-  --bg:#f6f1e7;           /* cream paper */
-  --ink:#1f2328;          /* dark text */
-  --accent:#f26722;       /* orange fill */
-  --accent-2:#d8342a;     /* red outline */
-  --panel:#ffffff;        /* cards */
-  --muted:#6b6f76;        /* secondary text */
-  --chip:#ffe9db;         /* pale orange chip */
-  --chip-border:#ffc6a3;
-  --border:#eadfcb;
-  --shadow:0 10px 30px rgba(216,52,42,.10);
+  /* Dark UI palette inspired by your mockup */
+  --bg:#0b1020;          /* deep navy */
+  --panel:#121934;       /* card surface */
+  --panel-2:#0f1730;
+  --text:#e8ecff;        /* near-white */
+  --muted:#a6b2d6;       /* secondary text */
+  --border:#24305b;
+  --accent:#6d5dfc;      /* purple */
+  --accent-2:#3aa0ff;    /* blue */
+  --accent-3:#9a8bff;    /* soft violet */
+  --chip:#1b2446;
+  --chip-border:#2a3770;
+  --shadow:0 14px 30px rgba(0,0,0,.35);
 }
 
 *{box-sizing:border-box}
 html,body{height:100%}
 body{
-  margin:0; background:radial-gradient(1200px 800px at 60% -20%, #fff 0%, var(--bg) 45%, var(--bg) 100%);
-  color:var(--ink); font-family:Inter,system-ui,Segoe UI,Roboto,Arial,sans-serif;
+  margin:0;
+  background:
+    radial-gradient(1200px 600px at 70% -10%, #1a2250, transparent 55%),
+    radial-gradient(900px 500px at -10% 10%, #111a3b, transparent 50%),
+    var(--bg);
+  color:var(--text);
+  font-family:Inter,system-ui,Segoe UI,Roboto,Arial,sans-serif;
 }
 
-/* App shell */
-.container{max-width:1100px;margin:28px auto;padding:0 16px}
+.container{max-width:1120px;margin:28px auto;padding:0 16px}
 .header{display:flex;align-items:center;gap:12px;margin-bottom:10px}
-.badge{width:36px;height:36px;border-radius:10px;background:
-  linear-gradient(135deg,var(--accent),#ff9b61);
-  border:3px solid var(--accent-2); display:grid;place-items:center;
-  color:#fff;font-weight:800}
+.logo{width:38px;height:38px;border-radius:10px;background:
+  linear-gradient(135deg,var(--accent),var(--accent-2));
+  display:grid;place-items:center;color:#fff;font-weight:800;border:2px solid #7ea8ff;box-shadow:0 6px 16px rgba(61,137,255,.35)}
 h1{font-size:28px;letter-spacing:.3px;margin:0}
 .sub{color:var(--muted);font-size:13px;margin:6px 0 18px}
 
-/* Chat surface */
 .chat{
-  background:var(--panel);
-  border:2px solid var(--border);
+  background:linear-gradient(180deg,var(--panel),var(--panel-2));
+  border:1px solid var(--border);
   border-radius:18px; padding:18px;
   box-shadow:var(--shadow);
 }
 .row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-.select, .pw{appearance:none;border:2px solid var(--border);border-radius:12px;padding:10px 12px;background:#fff}
-.input{width:100%;border:2px dashed var(--chip-border);background:#fff;border-radius:14px;padding:14px;font-size:15px;min-height:96px}
-.tags{width:100%;border:2px solid var(--border);border-radius:12px;padding:12px;margin-top:8px}
+.input, .tags, .pw, .select{
+  width:100%; padding:12px; border-radius:12px; color:var(--text);
+  background:#0f1730; border:1px solid var(--border)
+}
+.input{min-height:104px; resize:vertical}
+.tags{margin-top:8px}
+.select, .pw{appearance:none}
 
-.actions{display:flex;gap:12px;margin-top:12px;align-items:center}
+.actions{display:flex;gap:12px;margin-top:12px;align-items:center;flex-wrap:wrap}
 .btn{
-  border:2px solid var(--accent-2);
-  background:linear-gradient(90deg,var(--accent),#ffb27f);
+  border:1px solid #7ea8ff;
+  background:linear-gradient(90deg,var(--accent),var(--accent-2));
   color:#fff;font-weight:700;padding:12px 16px;border-radius:14px;cursor:pointer;
-  box-shadow:0 6px 14px rgba(242,103,34,.25);
+  box-shadow:0 10px 22px rgba(61,137,255,.35);
 }
 .btn:disabled{opacity:.6;cursor:not-allowed}
-.status{
-  background:#fff;border:2px solid var(--border);border-radius:12px;padding:10px 12px;
-  font-size:13px;color:var(--muted)
-}
+.status{background:#0f1730;border:1px solid var(--border);border-radius:12px;padding:10px 12px;font-size:13px;color:var(--muted)}
 progress{width:100%}
 
-.card{background:#fff;border:2px solid var(--border);border-radius:16px;padding:14px;margin-top:12px}
-.card h3{margin:0 0 8px 0;font-size:16px}
+.card{background:#0f1730;border:1px solid var(--border);border-radius:16px;padding:14px;margin-top:12px}
+.card h3{margin:0 0 8px 0;font-size:16px;color:#cdd7ff}
 
-/* Bubbles */
-.bubble{border:2px solid var(--border);border-radius:16px;padding:14px;background:#fff}
-.bubble.ai{border-color:var(--accent-2);box-shadow:0 8px 18px rgba(216,52,42,.08)}
+/* Reply bubble */
+.bubble{border:1px solid var(--border);border-radius:16px;padding:14px;background:#10193a}
+.bubble.ai{border-color:#5162ff;box-shadow:0 10px 24px rgba(109,93,252,.22)}
 .reply p{margin:0 0 8px 0;line-height:1.45}
-.reply strong{color:var(--accent-2)}
+.reply strong{color:var(--accent-3)}
 .reply ul{margin:6px 0 0 18px}
 
-/* Chips for matches */
+/* Top matches */
 ol{margin:10px 0 0 18px}
 li small{color:var(--muted)}
-.chip{display:inline-flex;align-items:center;gap:6px;padding:6px 10px;border-radius:999px;background:var(--chip);border:1px solid var(--chip-border);font-size:12px}
+.chip{display:inline-flex;align-items:center;gap:6px;padding:6px 10px;border-radius:999px;background:var(--chip);border:1px solid var(--chip-border);font-size:12px;color:#cfe1ff}
 
-/* Footer hint */
 .hint{color:var(--muted);font-size:12px;margin-top:8px}
 </style>
 </head>
 <body>
   <div class="container">
     <div class="header">
-      <div class="badge">T</div>
+      <div class="logo">T</div>
       <div>
         <h1>TYFYS Objection Coach</h1>
-        <div class="sub">Urgent, kind objection handling. Drafted on-device with a small browser LLM.</div>
+        <div class="sub">Urgent, kind objection handling. Runs locally in your browser.</div>
       </div>
     </div>
 
@@ -96,8 +100,7 @@ li small{color:var(--muted)}
       <div class="row">
         <input id="pw" class="pw" type="password" placeholder="Optional passphrase (leave blank to skip)" />
         <select id="model" class="select">
-          <option value="Phi-3-mini-4k-instruct-q4f32_1-MLC" selected>Phi-3 Mini (fast)</option>
-          <option value="Llama-3.2-3B-Instruct-q4f32_1-MLC">Llama-3.2 3B</option>
+          <option value="Llama-3.2-3B-Instruct-q4f32_1-MLC" selected>Llama-3.2-3B (default)</option>
           <option value="Gemma-2-2B-it-q4f32_1-MLC">Gemma-2 2B</option>
         </select>
       </div>
@@ -147,8 +150,7 @@ li small{color:var(--muted)}
   function score(snippet,tagsCsv,item){
     const s=(snippet||'').toLowerCase(); let sc=0;
     const text=[item.objection,item.rebuttal,item.proof].filter(Boolean).join(' ').toLowerCase();
-    // include family/wife/time to handle stalls
-    ['money','cost','fee','vso','dav','lawyer','risk','timeline','denied','rating','scam','family','wife','husband','think','wait','schedule','call'].forEach(k=>{
+    ['money','cost','fee','vso','dav','lawyer','risk','timeline','denied','rating','scam','family','wife','husband','think','wait','schedule','call','today','tomorrow'].forEach(k=>{
       if(s.includes(k)&&text.includes(k)) sc+=2;
     });
     const obj=(item.objection||'').toLowerCase();
@@ -189,24 +191,24 @@ li small{color:var(--muted)}
   await initEngine(modelSel.value);
   modelSel.onchange = async ()=>{ go.disabled=true; await initEngine(modelSel.value); };
 
-  // ---------- Prompt: urgent + kind + forward motion ----------
+  // ---------- Prompt: assumptive, urgent, kind ----------
   const SYS = `
 You are a VA-disability objection coach for Thank You For Your Service (TYFYS).
-Tone: urgent but kind, never pushy, never arrogant. Always suggest a concrete next step that reduces friction NOW.
-If a third-party (spouse/family/rep) is mentioned, propose a same-day 3-way call or book a time.
+Tone: urgent but kind, never pushy or arrogant. Use **assumptive next steps** that reduce friction NOW.
+If a spouse/family/rep is mentioned, **assume alignment is helpful** and propose a same-day 3-way call or immediate scheduling.
 Return HTML only in this structure:
 
 <div class="bubble ai reply">
   <p><strong>Acknowledge:</strong> <span>one empathetic sentence.</span></p>
-  <p><strong>Clarify:</strong> <span>one question that moves the decision forward.</span></p>
+  <p><strong>Clarify:</strong> <span>one question that advances the decision.</span></p>
   <p><strong>Offer:</strong></p>
   <ul>
-    <li>Option A: <span>immediate action (e.g., arrange 3-way call now or send 1-page summary while on the line).</span></li>
-    <li>Option B: <span>near-term fallback (e.g., book a time today/tomorrow, or phase payments per step).</span></li>
+    <li>Option A: <span>assumptive immediate action (e.g., “Perfect—let’s loop your wife in now. I can add her to a 3-way call while we’re here.”).</span></li>
+    <li>Option B: <span>near-term fallback with urgency (e.g., “If now isn’t ideal, I’ll book a quick three-way for this afternoon or tomorrow morning—what time works?”).</span></li>
   </ul>
 </div>
 
-No preambles or code fences. No legal advice. ≤120 words total. Keep it speakable.
+Keep ≤120 words. No legal advice. Speakable phrasing.
 `;
 
   async function generate(snippet,matches){
@@ -223,11 +225,11 @@ No preambles or code fences. No legal advice. ≤120 words total. Keep it speaka
 
   // ---------- Click ----------
   go.onclick = async ()=>{
-    if(!engine){ out.innerHTML='Model still loading.'; return; }
+    if(!engine){ out.innerHTML='<div class="bubble">Model still loading.</div>'; return; }
     const pw=document.getElementById('pw').value.trim();
-    if(pw && pw!=='TYFYS2025'){ out.innerHTML='Access denied.'; return; }
+    if(pw && pw!=='TYFYS2025'){ out.innerHTML='<div class="bubble">Access denied.</div>'; return; }
     const snippet=document.getElementById('snippet').value.trim();
-    if(!snippet){ out.innerHTML='Enter a snippet.'; return; }
+    if(!snippet){ out.innerHTML='<div class="bubble">Enter a snippet.</div>'; return; }
     const tags=document.getElementById('tags').value.trim();
 
     const picks=topK(snippet,tags,3);
