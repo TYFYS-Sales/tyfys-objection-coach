@@ -44,7 +44,7 @@ progress{width:100%}
 <div id="matches" class="k"></div>
 
 <script type="module">
-  // 1) WebGPU check
+  // UI refs
   const stat = document.getElementById('stat');
   const prog = document.getElementById('prog');
   const progWrap = document.getElementById('progWrap');
@@ -53,58 +53,86 @@ progress{width:100%}
   const matchesDiv = document.getElementById('matches');
   const go = document.getElementById('go');
   const modelSel = document.getElementById('model');
+  go.disabled = true; // disable until model ready
 
-  if(!('gpu' in navigator)){
-    stat.textContent = 'WebGPU not available. Use Chrome/Edge desktop v121+.';
-  }
+  // Load KB
+  let KB=[];
+  try{
+    const r=await fetch('objections.json',{cache:'no-store'});
+    if(!r.ok) throw new Error('objections.json missing');
+    KB = await r.json();
+  }catch(e){ stat.textContent='Error: '+e.message; }
 
-  // 2) Load playbook
-  let KB = [];
-  try {
-    const res = await fetch('objections.json', { cache: 'no-store' });
-    if (!res.ok) throw new Error('Could not load objections.json');
-    KB = await res.json();
-  } catch (e) {
-    stat.textContent = 'Error loading objections.json';
-    out.textContent = 'Add objections.json to the repo root.';
-    go.disabled = true;
-  }
-
-  // 3) Simple retrieval (client-side)
-  function score(snippet, tagsCsv, item){
-    const s = (snippet||'').toLowerCase();
-    let sc = 0;
-    const text = [item.objection, item.rebuttal, item.proof].filter(Boolean).join(' ').toLowerCase();
-    if(!text) return 0;
-    // keyword hits
+  function score(snippet,tagsCsv,item){
+    const s=(snippet||'').toLowerCase(); let sc=0;
+    const text=[item.objection,item.rebuttal,item.proof].filter(Boolean).join(' ').toLowerCase();
     ['money','cost','fee','vso','dav','lawyer','risk','timeline','denied','rating','scam'].forEach(k=>{
-      if(s.includes(k) && text.includes(k)) sc += 2;
+      if(s.includes(k)&&text.includes(k)) sc+=2;
     });
-    // prefix match on objection
-    const obj = (item.objection||'').toLowerCase();
-    if(obj && s.includes(obj.slice(0, Math.min(18,obj.length)))) sc += 2;
-    // tag overlap
-    const want = new Set((tagsCsv||'').split(',').map(x=>x.trim().toLowerCase()).filter(Boolean));
-    const have = new Set((item.tags||[]).map(String).map(x=>x.toLowerCase()));
-    for(const t of want) if(have.has(t)) sc += 1;
+    const obj=(item.objection||'').toLowerCase();
+    if(obj && s.includes(obj.slice(0,18))) sc+=2;
+    const want=new Set((tagsCsv||'').split(',').map(x=>x.trim().toLowerCase()).filter(Boolean));
+    const have=new Set((item.tags||[]).map(x=>String(x).toLowerCase()));
+    for(const t of want) if(have.has(t)) sc+=1;
     return sc;
   }
-  function topK(snippet, tagsCsv, k=3){
-    const arr = KB.map(x=>({item:x, s:score(snippet, tagsCsv, x)})).sort((a,b)=>b.s-a.s).slice(0,k).map(x=>x.item);
-    return arr.length ? arr : KB.slice(0,k);
+  function topK(snippet,tagsCsv,k=3){
+    const arr=KB.map(x=>({item:x,s:score(snippet,tagsCsv,x)})).sort((a,b)=>b.s-a.s).slice(0,k).map(x=>x.item);
+    return arr.length?arr:KB.slice(0,k);
   }
 
-  // 4) WebLLM
-  import * as webllm from "https://esm.run/@mlc-ai/web-llm";
-  let engine = null;
+  // Load WebLLM
+  import * as webllm from "https://cdn.jsdelivr.net/npm/@mlc-ai/web-llm/dist/index.js";
+  let engine=null;
 
   async function initEngine(modelName){
-    stat.textContent = `Loading ${modelName}…`;
-    progWrap.style.display = 'block';
-    prog.value = 0; progText.textContent = '';
+    stat.textContent=`Loading ${modelName}…`;
+    progWrap.style.display='block'; prog.value=0; progText.textContent='';
+    try{
+      engine = await webllm.CreateMLCEngine(modelName,{
+        gpuMemoryUtilization:0.7,
+        initProgressCallback:(p)=>{
+          if(p.text) progText.textContent=p.text;
+          if(typeof p.progress==='number') prog.value=p.progress;
+          if(p.error){ stat.textContent='Error: '+p.error; }
+          if(p.progress===1){
+            stat.textContent='Model ready.'; progWrap.style.display='none'; go.disabled=false;
+          }
+        }
+      });
+    }catch(e){
+      stat.textContent='Engine init failed: '+e.message;
+    }
+  }
 
-    engine = await webllm.CreateMLCEngine(modelName, {
-      gpuMemoryUtilization: 0.75,
-      initProgressCallback: (p) => {
-        if(p.progress){ prog.value = p.progress; }
-        p
+  // Start with the smaller model to ensure download
+  modelSel.value = "Phi-3-mini-4k-instruct-q4f32_1-MLC";
+  await initEngine(modelSel.value);
+  modelSel.onchange = async ()=>{ go.disabled=true; await initEngine(modelSel.value); };
+
+  const SYS="You are a TYFYS VA-claims objection coach. Reply in 3 parts: 1) Acknowledge 2) One clarifying question 3) Offer two concise options. No legal advice. ≤80 words. Calm. Factual.";
+
+  async function generate(snippet,matches){
+    const ctx = matches.map(m=>`Objection: ${m.objection}\nBestReply: ${m.rebuttal}\nProof: ${m.proof||""}`).join("\n\n");
+    const res = await engine.chat.completions.create({
+      messages:[{role:"system",content:SYS},{role:"user",content:`Context:\n${ctx}\n\nTranscript:\n${snippet}\n\nCoach reply:`}],
+      temperature:0.2, max_tokens:140
+    });
+    return res.choices[0].message.content;
+  }
+
+  document.getElementById('go').onclick = async ()=>{
+    if(!engine){ out.textContent='Model still loading.'; return; }
+    const pw=document.getElementById('pw').value.trim();
+    if(pw && pw!=='TYFYS2025'){ out.textContent='Access denied.'; return; }
+    const snippet=document.getElementById('snippet').value.trim();
+    if(!snippet){ out.textContent='Enter a snippet.'; return; }
+    const tags=document.getElementById('tags').value.trim();
+
+    const picks=topK(snippet,tags,3);
+    matchesDiv.innerHTML = `<b>Top matches</b><ol>`+picks.map(m=>`<li><b>${m.objection||'Untitled'}</b><br><small>${m.rebuttal||''}</small></li>`).join('')+`</ol>`;
+    out.textContent='Thinking…';
+    try{ out.textContent = await generate(snippet,picks); }
+    catch(e){ out.textContent='AI error: '+e.message; }
+  };
+</script>
