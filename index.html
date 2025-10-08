@@ -44,7 +44,7 @@ progress{width:100%}
 <div id="matches" class="k"></div>
 
 <script type="module">
-  // UI refs
+  // --- UI refs ---
   const stat = document.getElementById('stat');
   const prog = document.getElementById('prog');
   const progWrap = document.getElementById('progWrap');
@@ -53,9 +53,9 @@ progress{width:100%}
   const matchesDiv = document.getElementById('matches');
   const go = document.getElementById('go');
   const modelSel = document.getElementById('model');
-  go.disabled = true; // disable until model ready
+  go.disabled = true;
 
-  // Load KB
+  // --- Load playbook ---
   let KB=[];
   try{
     const r=await fetch('objections.json',{cache:'no-store'});
@@ -81,8 +81,8 @@ progress{width:100%}
     return arr.length?arr:KB.slice(0,k);
   }
 
-  // Load WebLLM
-  import * as webllm from "https://cdn.jsdelivr.net/npm/@mlc-ai/web-llm/dist/index.js";
+  // --- WebLLM import (ESM CDN) ---
+  import * as webllm from "https://esm.run/@mlc-ai/web-llm";
   let engine=null;
 
   async function initEngine(modelName){
@@ -105,7 +105,7 @@ progress{width:100%}
     }
   }
 
-  // Start with the smaller model to ensure download
+  // Start with the smaller model
   modelSel.value = "Phi-3-mini-4k-instruct-q4f32_1-MLC";
   await initEngine(modelSel.value);
   modelSel.onchange = async ()=>{ go.disabled=true; await initEngine(modelSel.value); };
@@ -136,3 +136,5 @@ progress{width:100%}
     catch(e){ out.textContent='AI error: '+e.message; }
   };
 </script>
+</body>
+</html>
