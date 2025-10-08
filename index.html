@@ -20,7 +20,6 @@
   --chip-border:#2a3770;
   --shadow:0 14px 30px rgba(0,0,0,.35);
 }
-
 *{box-sizing:border-box}
 html,body{height:100%}
 body{
@@ -32,7 +31,6 @@ body{
   color:var(--text);
   font-family:Inter,system-ui,Segoe UI,Roboto,Arial,sans-serif;
 }
-
 .container{max-width:1120px;margin:28px auto;padding:0 16px}
 .header{display:flex;align-items:center;gap:12px;margin-bottom:10px}
 .logo{width:38px;height:38px;border-radius:10px;background:
@@ -40,7 +38,6 @@ body{
   display:grid;place-items:center;color:#fff;font-weight:800;border:2px solid #7ea8ff;box-shadow:0 6px 16px rgba(61,137,255,.35)}
 h1{font-size:28px;letter-spacing:.3px;margin:0}
 .sub{color:var(--muted);font-size:13px;margin:6px 0 18px}
-
 .chat{
   background:linear-gradient(180deg,var(--panel),var(--panel-2));
   border:1px solid var(--border);
@@ -55,7 +52,6 @@ h1{font-size:28px;letter-spacing:.3px;margin:0}
 .input{min-height:104px; resize:vertical}
 .tags{margin-top:8px}
 .select, .pw{appearance:none}
-
 .actions{display:flex;gap:12px;margin-top:12px;align-items:center;flex-wrap:wrap}
 .btn{
   border:1px solid #7ea8ff;
@@ -66,22 +62,16 @@ h1{font-size:28px;letter-spacing:.3px;margin:0}
 .btn:disabled{opacity:.6;cursor:not-allowed}
 .status{background:#0f1730;border:1px solid var(--border);border-radius:12px;padding:10px 12px;font-size:13px;color:var(--muted)}
 progress{width:100%}
-
 .card{background:#0f1730;border:1px solid var(--border);border-radius:16px;padding:14px;margin-top:12px}
 .card h3{margin:0 0 8px 0;font-size:16px;color:#cdd7ff}
-
-/* Reply bubble */
 .bubble{border:1px solid var(--border);border-radius:16px;padding:14px;background:#10193a}
 .bubble.ai{border-color:#5162ff;box-shadow:0 10px 24px rgba(109,93,252,.22)}
 .reply p{margin:0 0 8px 0;line-height:1.45}
 .reply strong{color:var(--accent-3)}
 .reply ul{margin:6px 0 0 18px}
-
-/* Top matches */
 ol{margin:10px 0 0 18px}
 li small{color:var(--muted)}
 .chip{display:inline-flex;align-items:center;gap:6px;padding:6px 10px;border-radius:999px;background:var(--chip);border:1px solid var(--chip-border);font-size:12px;color:#cfe1ff}
-
 .hint{color:var(--muted);font-size:12px;margin-top:8px}
 </style>
 </head>
@@ -91,7 +81,7 @@ li small{color:var(--muted)}
       <div class="logo">T</div>
       <div>
         <h1>TYFYS Objection Coach</h1>
-        <div class="sub">Urgent, kind objection handling — runs locally in your browser.</div>
+        <div class="sub">Urgent, kind objection handling. Runs locally in your browser.</div>
       </div>
     </div>
 
@@ -100,7 +90,7 @@ li small{color:var(--muted)}
         <input id="pw" class="pw" type="password" placeholder="Optional passphrase (leave blank to skip)" />
         <select id="model" class="select">
           <option value="Llama-3.2-3B-Instruct-q4f32_1-MLC" selected>Llama-3.2-3B (default)</option>
-          <option value="Gemma-2-2B-it-q4f32_1-MLC">Gemma-2-2B</option>
+          <option value="Gemma-2-2B-it-q4f32_1-MLC">Gemma-2 2B</option>
         </select>
       </div>
 
@@ -135,15 +125,12 @@ li small{color:var(--muted)}
   const modelSel = document.getElementById('model');
   go.disabled = true;
 
-  // ---------- Load playbook ----------
   let KB=[];
   try{
     const r=await fetch('objections.json',{cache:'no-store'});
     if(!r.ok) throw new Error('objections.json missing');
     KB = await r.json();
-  }catch(e){
-    stat.textContent='Error: '+e.message;
-  }
+  }catch(e){ stat.textContent='Error: '+e.message; }
 
   function score(snippet,tagsCsv,item){
     const s=(snippet||'').toLowerCase(); let sc=0;
@@ -163,7 +150,6 @@ li small{color:var(--muted)}
     return arr.length?arr:KB.slice(0,k);
   }
 
-  // ---------- WebLLM ----------
   import * as webllm from "https://esm.run/@mlc-ai/web-llm";
   let engine=null;
 
@@ -182,33 +168,81 @@ li small{color:var(--muted)}
           }
         }
       });
-    }catch(e){
-      stat.textContent='Engine init failed: '+e.message;
-    }
+    }catch(e){ stat.textContent='Engine init failed: '+e.message; }
   }
   await initEngine(modelSel.value);
   modelSel.onchange = async ()=>{ go.disabled=true; await initEngine(modelSel.value); };
 
-  // ---------- Enhanced Persona Prompt ----------
   const SYS = `
-You are a 20-year sales veteran who has mastered the one-call close through empathy, truth, and leadership.
-You are kind, calm, and sincere—never pushy—but you are also confident and clear about the value of taking action now.
-You specialize in working with U.S. veterans seeking to increase their VA disability rating or get rated for the first time.
-You are prior service yourself, and you waited too long to file for your own disability, missing out on years of compensation.
-You know firsthand the cost of delay, and you help veterans avoid that mistake by making informed decisions today.
+You are a 20-year sales veteran who has mastered the one-call close through empathy, honesty, and leadership.
+You are calm, kind, and sincere—never pushy—but you are confident, direct, and clear about the value of taking action now.
 
-Your superpower is uncovering hidden or unspoken objections with compassion and curiosity.
-You listen deeply, validate concerns, and guide veterans toward clarity and confidence.
-You show value by connecting outcomes (financial relief, stability, peace of mind) to the veteran’s goals, showing that the outcome far outweighs the small investment.
+You specialize in helping U.S. veterans increase their VA disability rating or get rated for the first time.
+You are prior service yourself, so you speak their language and understand their hesitation, pride, and fears.
+You once waited too long to file for disability and missed out on years of compensation—so you know the real cost of delay.
 
-Tone: urgent but kind, assumptive and forward-moving, never arrogant or high-pressure.
-If a spouse or third party is mentioned, welcome their involvement and propose an immediate 3-way call or same-day follow-up.
+Your superpower is uncovering hidden objections through genuine curiosity and heart-centered questions.
+You help veterans feel heard and respected while gently leading them toward a confident yes.
 
-Return your answer as structured HTML:
+You are an expert at showing value—painting a clear picture of how TYFYS’s support, documentation, and process
+create life-changing outcomes that far outweigh the small investment required.
+
+Your tone: urgent but kind. 
+Always assume forward motion. Never argue or pressure—educate, empower, and guide.
+Make the veteran feel understood while helping them see that waiting only costs them time and money.
+
+If a spouse, family member, or third party is mentioned, welcome their involvement immediately
+and propose a same-day or next-day 3-way call to keep momentum strong.
+
+Respond in HTML using this structure:
 
 <div class="bubble ai reply">
-  <p><strong>Acknowledge:</strong> one empathetic sentence.</p>
-  <p><strong>Clarify:</strong> one natural question that pulls out the real reason for hesitation.</p>
+  <p><strong>Acknowledge:</strong> <span>one heartfelt sentence showing understanding and empathy.</span></p>
+  <p><strong>Clarify:</strong> <span>one question that uncovers their real hesitation or helps them reframe the concern.</span></p>
   <p><strong>Offer:</strong></p>
   <ul>
-    <li>Option A: assumptive, encouraging immediate action (e.g., “Perfect—it’s important that yo
+    <li>Option A: <span>an assumptive, positive next step (e.g., “Perfect—let’s loop your wife in now. I can add her to a quick 3-way call while we’re on the line.”)</span></li>
+    <li>Option B: <span>a fallback plan that keeps urgency (e.g., “If now’s not ideal, let’s lock in a quick three-way for this afternoon or tomorrow morning—what works best?”)</span></li>
+  </ul>
+</div>
+
+Keep it conversational and concise (under 120 words).
+Sound like a trusted veteran helping another veteran take the next right step.
+`;
+
+  async function generate(snippet,matches){
+    const ctx = matches.map(m=>`Objection: ${m.objection}\nBestReply: ${m.rebuttal}\nProof: ${m.proof||""}`).join("\n\n");
+    const res = await engine.chat.completions.create({
+      messages:[
+        {role:"system",content:SYS},
+        {role:"user",content:`Context:\n${ctx}\n\nTranscript:\n${snippet}\n\nCoach reply:`}
+      ],
+      temperature:0.45, max_tokens:220
+    });
+    return res.choices[0].message.content;
+  }
+
+  go.onclick = async ()=>{
+    if(!engine){ out.innerHTML='<div class="bubble">Model still loading.</div>'; return; }
+    const pw=document.getElementById('pw').value.trim();
+    if(pw && pw!=='TYFYS2025'){ out.innerHTML='<div class="bubble">Access denied.</div>'; return; }
+    const snippet=document.getElementById('snippet').value.trim();
+    if(!snippet){ out.innerHTML='<div class="bubble">Enter a snippet.</div>'; return; }
+    const tags=document.getElementById('tags').value.trim();
+
+    const picks=topK(snippet,tags,3);
+    matchesDiv.innerHTML = `<h3>Top matches</h3><ol>`+
+      picks.map(m=>`<li><b>${m.objection||'Untitled'}</b><br><small>${m.rebuttal||''}</small></li>`).join('')+
+      `</ol>`;
+
+    out.innerHTML='<div class="bubble">Thinking…</div>';
+    try{
+      const html = await generate(snippet,picks);
+      out.innerHTML = html;
+    }catch(e){
+      out.innerHTML='<div class="bubble">AI error: '+e.message+'</div>';
+    }
+  };
+</script>
+</body>
+</html>
