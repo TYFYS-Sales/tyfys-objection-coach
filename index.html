@@ -5,88 +5,106 @@
 <meta name="viewport" content="width=device-width,initial-scale=1" />
 <title>TYFYS Objection Coach</title>
 <style>
-body{font-family:system-ui, sans-serif;max-width:900px;margin:24px auto;padding:0 12px}
-textarea,input,button{width:100%;padding:12px;margin:8px 0;border:1px solid #ddd;border-radius:10px}
+body{font-family:system-ui,sans-serif;max-width:900px;margin:24px auto;padding:0 12px}
+textarea,input,button,select{width:100%;padding:12px;margin:8px 0;border:1px solid #ddd;border-radius:10px}
 .k{padding:10px;border:1px solid #eee;border-radius:12px;margin:8px 0}
 small{color:#666}
+button{cursor:pointer}
+#status{font-size:12px;color:#333}
+progress{width:100%}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
 </style>
 </head>
 <body>
 <h1>TYFYS Objection Coach</h1>
-<p><small>Paste a transcript snippet. Get a 3-part reply. Runs fully in your browser.</small></p>
+<p><small>Paste a transcript snippet. Top matches come from your playbook. Reply is drafted by a small in-browser LLM.</small></p>
 
-<input id="pw" type="password" placeholder="Optional passphrase (leave blank to skip)" />
-<textarea id="snippet" rows="4" placeholder="Transcript snippet"></textarea>
+<div class="row">
+  <input id="pw" type="password" placeholder="Optional passphrase (leave blank to skip)" />
+  <select id="model">
+    <option value="Llama-3.2-3B-Instruct-q4f32_1-MLC" selected>Llama-3.2-3B-Instruct (fast)</option>
+    <option value="Phi-3-mini-4k-instruct-q4f32_1-MLC">Phi-3-Mini-Instruct</option>
+    <option value="Gemma-2-2B-it-q4f32_1-MLC">Gemma-2-2B-IT</option>
+  </select>
+</div>
+
+<textarea id="snippet" rows="4" placeholder="Transcript snippet…"></textarea>
 <input id="tags" placeholder="Optional tags: vso, pricing, stall" />
 <button id="go">Suggest reply</button>
+
+<div id="status" class="k">
+  <b>Status:</b> <span id="stat">Initializing…</span>
+  <div id="progWrap" style="display:none">
+    <progress id="prog" value="0" max="1"></progress>
+    <div><small id="progText"></small></div>
+  </div>
+</div>
 
 <div id="out" class="k"></div>
 <div id="matches" class="k"></div>
 
-<script src="https://unpkg.com/lunr/lunr.js"></script>
 <script type="module">
-  // Load KB
+  // 1) WebGPU check
+  const stat = document.getElementById('stat');
+  const prog = document.getElementById('prog');
+  const progWrap = document.getElementById('progWrap');
+  const progText = document.getElementById('progText');
+  const out = document.getElementById('out');
+  const matchesDiv = document.getElementById('matches');
+  const go = document.getElementById('go');
+  const modelSel = document.getElementById('model');
+
+  if(!('gpu' in navigator)){
+    stat.textContent = 'WebGPU not available. Use Chrome/Edge desktop v121+.';
+  }
+
+  // 2) Load playbook
   let KB = [];
-  const res = await fetch('objections.json',{cache:'no-store'});
-  KB = await res.json();
+  try {
+    const res = await fetch('objections.json', { cache: 'no-store' });
+    if (!res.ok) throw new Error('Could not load objections.json');
+    KB = await res.json();
+  } catch (e) {
+    stat.textContent = 'Error loading objections.json';
+    out.textContent = 'Add objections.json to the repo root.';
+    go.disabled = true;
+  }
 
-  // Search index
-  const idx = lunr(function () {
-    this.ref('id'); this.field('objection'); this.field('tags'); this.field('rebuttal'); this.field('proof');
-    KB.forEach((x,i)=> this.add({...x, id:i}));
-  });
+  // 3) Simple retrieval (client-side)
+  function score(snippet, tagsCsv, item){
+    const s = (snippet||'').toLowerCase();
+    let sc = 0;
+    const text = [item.objection, item.rebuttal, item.proof].filter(Boolean).join(' ').toLowerCase();
+    if(!text) return 0;
+    // keyword hits
+    ['money','cost','fee','vso','dav','lawyer','risk','timeline','denied','rating','scam'].forEach(k=>{
+      if(s.includes(k) && text.includes(k)) sc += 2;
+    });
+    // prefix match on objection
+    const obj = (item.objection||'').toLowerCase();
+    if(obj && s.includes(obj.slice(0, Math.min(18,obj.length)))) sc += 2;
+    // tag overlap
+    const want = new Set((tagsCsv||'').split(',').map(x=>x.trim().toLowerCase()).filter(Boolean));
+    const have = new Set((item.tags||[]).map(String).map(x=>x.toLowerCase()));
+    for(const t of want) if(have.has(t)) sc += 1;
+    return sc;
+  }
+  function topK(snippet, tagsCsv, k=3){
+    const arr = KB.map(x=>({item:x, s:score(snippet, tagsCsv, x)})).sort((a,b)=>b.s-a.s).slice(0,k).map(x=>x.item);
+    return arr.length ? arr : KB.slice(0,k);
+  }
 
-  // WebLLM (small model). Fallback if device lacks WebGPU.
+  // 4) WebLLM
   import * as webllm from "https://esm.run/@mlc-ai/web-llm";
   let engine = null;
-  try {
-    engine = await webllm.CreateMLCEngine("Llama-3.2-3B-Instruct-q4f32_1-MLC", { gpuMemoryUtilization: 0.6 });
-  } catch(e) { /* fallback path used below */ }
 
-  function topK(query, tags, k=3){
-    const q = (query||"") + " " + (tags||"");
-    const res = idx.search(lunr.utils.asString(q));
-    const picks = res.slice(0, k).map(r => ({...KB[r.ref], score:r.score}));
-    return picks.length ? picks : KB.slice(0,k);
-  }
+  async function initEngine(modelName){
+    stat.textContent = `Loading ${modelName}…`;
+    progWrap.style.display = 'block';
+    prog.value = 0; progText.textContent = '';
 
-  async function generate(snippet, matches){
-    const context = matches.map(m =>
-      `Objection: ${m.objection}\nBestReply: ${m.rebuttal}\nProof: ${m.proof||""}`
-    ).join("\n\n");
-    const sys = "You are a TYFYS VA-claims objection coach. Reply in 3 parts: 1) Acknowledge 2) One clarifying question 3) Offer two concise options. No legal advice. <=80 words. Calm. Factual.";
-    const prompt = `${sys}\n\nContext:\n${context}\n\nTranscript:\n${snippet}\n\nCoach reply:`;
-
-    if (engine){
-      const out = await engine.chat.completions.create({
-        messages:[{role:"user", content:prompt}],
-        temperature:0.2, max_tokens:140
-      });
-      return out.choices[0].message.content;
-    } else {
-      const m = matches[0]||{};
-      return `1) Understood. ${m.objection?`On ${m.objection.toLowerCase()}, we see this often.`:""}
-2) Quick check: what would you need to feel confident moving forward today?
-3) Option A: ${m.rebuttal||"Review scope, fees, and cancel-before-evidence policy."}  Option B: Schedule a short follow-up to confirm ${m.proof||"steps and timelines"} in writing.`;
-    }
-  }
-
-  document.getElementById('go').onclick = async () => {
-    const pw = document.getElementById('pw').value.trim();
-    if(pw && pw !== "TYFYS2025"){ document.getElementById('out').innerText="Access denied."; return; }
-
-    const snippet = document.getElementById('snippet').value.trim();
-    const tags = document.getElementById('tags').value.trim();
-    if(!snippet){ document.getElementById('out').innerText="Enter a snippet."; return; }
-
-    const matches = topK(snippet, tags, 3);
-    document.getElementById('matches').innerHTML =
-      `<b>Top matches</b><ol>` + matches.map(m=>`<li><b>${m.objection}</b><br><small>${m.rebuttal}</small></li>`).join("") + `</ol>`;
-
-    document.getElementById('out').innerText = "Thinking… first load can take 1–2 minutes";
-    const reply = await generate(snippet, matches);
-    document.getElementById('out').innerText = reply;
-  };
-</script>
-</body>
-</html>
+    engine = await webllm.CreateMLCEngine(modelName, {
+      gpuMemoryUtilization: 0.75,
+      initProgressCallback: (p) => {
+        if(p.progress){ prog.value = p.progress; }
+        p
