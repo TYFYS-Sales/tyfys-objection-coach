@@ -1,0 +1,92 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>TYFYS Objection Coach</title>
+<style>
+body{font-family:system-ui, sans-serif;max-width:900px;margin:24px auto;padding:0 12px}
+textarea,input,button{width:100%;padding:12px;margin:8px 0;border:1px solid #ddd;border-radius:10px}
+.k{padding:10px;border:1px solid #eee;border-radius:12px;margin:8px 0}
+small{color:#666}
+</style>
+</head>
+<body>
+<h1>TYFYS Objection Coach</h1>
+<p><small>Paste a transcript snippet. Get a 3-part reply. Runs fully in your browser.</small></p>
+
+<input id="pw" type="password" placeholder="Optional passphrase (leave blank to skip)" />
+<textarea id="snippet" rows="4" placeholder="Transcript snippet"></textarea>
+<input id="tags" placeholder="Optional tags: vso, pricing, stall" />
+<button id="go">Suggest reply</button>
+
+<div id="out" class="k"></div>
+<div id="matches" class="k"></div>
+
+<script src="https://unpkg.com/lunr/lunr.js"></script>
+<script type="module">
+  // Load KB
+  let KB = [];
+  const res = await fetch('objections.json',{cache:'no-store'});
+  KB = await res.json();
+
+  // Search index
+  const idx = lunr(function () {
+    this.ref('id'); this.field('objection'); this.field('tags'); this.field('rebuttal'); this.field('proof');
+    KB.forEach((x,i)=> this.add({...x, id:i}));
+  });
+
+  // WebLLM (small model). Fallback if device lacks WebGPU.
+  import * as webllm from "https://esm.run/@mlc-ai/web-llm";
+  let engine = null;
+  try {
+    engine = await webllm.CreateMLCEngine("Llama-3.2-3B-Instruct-q4f32_1-MLC", { gpuMemoryUtilization: 0.6 });
+  } catch(e) { /* fallback path used below */ }
+
+  function topK(query, tags, k=3){
+    const q = (query||"") + " " + (tags||"");
+    const res = idx.search(lunr.utils.asString(q));
+    const picks = res.slice(0, k).map(r => ({...KB[r.ref], score:r.score}));
+    return picks.length ? picks : KB.slice(0,k);
+  }
+
+  async function generate(snippet, matches){
+    const context = matches.map(m =>
+      `Objection: ${m.objection}\nBestReply: ${m.rebuttal}\nProof: ${m.proof||""}`
+    ).join("\n\n");
+    const sys = "You are a TYFYS VA-claims objection coach. Reply in 3 parts: 1) Acknowledge 2) One clarifying question 3) Offer two concise options. No legal advice. <=80 words. Calm. Factual.";
+    const prompt = `${sys}\n\nContext:\n${context}\n\nTranscript:\n${snippet}\n\nCoach reply:`;
+
+    if (engine){
+      const out = await engine.chat.completions.create({
+        messages:[{role:"user", content:prompt}],
+        temperature:0.2, max_tokens:140
+      });
+      return out.choices[0].message.content;
+    } else {
+      const m = matches[0]||{};
+      return `1) Understood. ${m.objection?`On ${m.objection.toLowerCase()}, we see this often.`:""}
+2) Quick check: what would you need to feel confident moving forward today?
+3) Option A: ${m.rebuttal||"Review scope, fees, and cancel-before-evidence policy."}  Option B: Schedule a short follow-up to confirm ${m.proof||"steps and timelines"} in writing.`;
+    }
+  }
+
+  document.getElementById('go').onclick = async () => {
+    const pw = document.getElementById('pw').value.trim();
+    if(pw && pw !== "TYFYS2025"){ document.getElementById('out').innerText="Access denied."; return; }
+
+    const snippet = document.getElementById('snippet').value.trim();
+    const tags = document.getElementById('tags').value.trim();
+    if(!snippet){ document.getElementById('out').innerText="Enter a snippet."; return; }
+
+    const matches = topK(snippet, tags, 3);
+    document.getElementById('matches').innerHTML =
+      `<b>Top matches</b><ol>` + matches.map(m=>`<li><b>${m.objection}</b><br><small>${m.rebuttal}</small></li>`).join("") + `</ol>`;
+
+    document.getElementById('out').innerText = "Thinking… first load can take 1–2 minutes";
+    const reply = await generate(snippet, matches);
+    document.getElementById('out').innerText = reply;
+  };
+</script>
+</body>
+</html>
