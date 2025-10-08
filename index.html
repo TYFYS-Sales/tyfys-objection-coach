@@ -7,18 +7,9 @@
 
 <style>
 :root{
-  --bg:#0b1020;
-  --panel:#121934;
-  --panel-2:#0f1730;
-  --text:#e8ecff;
-  --muted:#a6b2d6;
-  --border:#24305b;
-  --accent:#6d5dfc;
-  --accent-2:#3aa0ff;
-  --accent-3:#9a8bff;
-  --chip:#1b2446;
-  --chip-border:#2a3770;
-  --shadow:0 14px 30px rgba(0,0,0,.35);
+  --bg:#0b1020; --panel:#121934; --panel-2:#0f1730; --text:#e8ecff; --muted:#a6b2d6;
+  --border:#24305b; --accent:#6d5dfc; --accent-2:#3aa0ff; --accent-3:#9a8bff;
+  --chip:#1b2446; --chip-border:#2a3770; --shadow:0 14px 30px rgba(0,0,0,.35);
 }
 *{box-sizing:border-box}
 html,body{height:100%}
@@ -70,7 +61,7 @@ progress{width:100%}
 .reply strong{color:var(--accent-3)}
 .reply ul{margin:6px 0 0 18px}
 ol{margin:10px 0 0 18px}
-li small{color:var(--muted)}
+li small{color:#a8b6e6}
 .chip{display:inline-flex;align-items:center;gap:6px;padding:6px 10px;border-radius:999px;background:var(--chip);border:1px solid var(--chip-border);font-size:12px;color:#cfe1ff}
 .hint{color:var(--muted);font-size:12px;margin-top:8px}
 </style>
@@ -94,7 +85,7 @@ li small{color:var(--muted)}
         </select>
       </div>
 
-      <textarea id="snippet" class="input" placeholder="Transcript snippet… e.g., I need to speak with my wife."></textarea>
+      <textarea id="snippet" class="input" placeholder="Transcript snippet…"></textarea>
       <input id="tags" class="tags" placeholder="Optional tags: vso, pricing, stall" />
 
       <div class="actions">
@@ -115,6 +106,7 @@ li small{color:var(--muted)}
   </div>
 
 <script type="module">
+  // ---- UI refs
   const stat = document.getElementById('stat');
   const prog = document.getElementById('prog');
   const progWrap = document.getElementById('progWrap');
@@ -125,6 +117,7 @@ li small{color:var(--muted)}
   const modelSel = document.getElementById('model');
   go.disabled = true;
 
+  // ---- Load objections
   let KB=[];
   try{
     const r=await fetch('objections.json',{cache:'no-store'});
@@ -150,6 +143,7 @@ li small{color:var(--muted)}
     return arr.length?arr:KB.slice(0,k);
   }
 
+  // ---- WebLLM
   import * as webllm from "https://esm.run/@mlc-ai/web-llm";
   let engine=null;
 
@@ -173,55 +167,59 @@ li small{color:var(--muted)}
   await initEngine(modelSel.value);
   modelSel.onchange = async ()=>{ go.disabled=true; await initEngine(modelSel.value); };
 
+  // ---- System prompt with CLARIFY rule and focus words token
   const SYS = `
-You are a 20-year sales veteran who has mastered the one-call close through empathy, honesty, and leadership.
-You are calm, kind, and sincere—never pushy—but you are confident, direct, and clear about the value of taking action now.
+You are a veteran sales coach for TYFYS. Urgent but kind. Assume forward motion.
 
-You specialize in helping U.S. veterans increase their VA disability rating or get rated for the first time.
-You are prior service yourself, so you speak their language and understand their hesitation, pride, and fears.
-You once waited too long to file for disability and missed out on years of compensation—so you know the real cost of delay.
+Rules for CLARIFY:
+- It must be specific to the transcript and top-match objection.
+- It must include at least one focus word from {FOCUS_WORDS}.
+- It must never be a generic question like "what's holding you back?"
 
-Your superpower is uncovering hidden objections through genuine curiosity and heart-centered questions.
-You help veterans feel heard and respected while gently leading them toward a confident yes.
-
-You are an expert at showing value—painting a clear picture of how TYFYS’s support, documentation, and process
-create life-changing outcomes that far outweigh the small investment required.
-
-Your tone: urgent but kind. 
-Always assume forward motion. Never argue or pressure—educate, empower, and guide.
-Make the veteran feel understood while helping them see that waiting only costs them time and money.
-
-If a spouse, family member, or third party is mentioned, welcome their involvement immediately
-and propose a same-day or next-day 3-way call to keep momentum strong.
-
-Respond in HTML using this structure:
+Return HTML only:
 
 <div class="bubble ai reply">
-  <p><strong>Acknowledge:</strong> <span>one heartfelt sentence showing understanding and empathy.</span></p>
-  <p><strong>Clarify:</strong> <span>one question that uncovers their real hesitation or helps them reframe the concern.</span></p>
+  <p><strong>Acknowledge:</strong> <span>one empathetic sentence.</span></p>
+  <p><strong>Clarify:</strong> <span>one targeted question using a focus word.</span></p>
   <p><strong>Offer:</strong></p>
   <ul>
-    <li>Option A: <span>an assumptive, positive next step (e.g., “Perfect—let’s loop your wife in now. I can add her to a quick 3-way call while we’re on the line.”)</span></li>
-    <li>Option B: <span>a fallback plan that keeps urgency (e.g., “If now’s not ideal, let’s lock in a quick three-way for this afternoon or tomorrow morning—what works best?”)</span></li>
+    <li>Option A: <span>assumptive immediate step.</span></li>
+    <li>Option B: <span>near-term fallback (today/tomorrow).</span></li>
   </ul>
 </div>
 
-Keep it conversational and concise (under 120 words).
-Sound like a trusted veteran helping another veteran take the next right step.
+≤120 words. Speakable. No legal/medical/financial advice.
 `;
 
+  // ---- Extract focus words from snippet + top match
+  function focusWordsFrom(snippet, topMatch){
+    const stop = new Set("i,me,my,ours,our,you,your,with,for,and,or,but,if,then,that,this,those,these,is,are,was,were,be,been,the,a,an,to,of,on,in,at,as,it,it's,im,ive,dont,do,not,no,yes,am,are,can,will,want".split(','));
+    const raw = (snippet + ' ' + (topMatch?.objection||'') + ' ' + (topMatch?.tags||[]).join(' ')).toLowerCase();
+    const words = [...new Set(raw.match(/[a-z][a-z'-]{2,}/g)||[])]
+      .filter(w=>!stop.has(w)).slice(0,8);
+    return words.length ? words : ['cost','timing','risk','evidence','appointment'];
+  }
+
+  // ---- Generate with penalties + focus injection
   async function generate(snippet,matches){
     const ctx = matches.map(m=>`Objection: ${m.objection}\nBestReply: ${m.rebuttal}\nProof: ${m.proof||""}`).join("\n\n");
+    const focus = focusWordsFrom(snippet, matches[0]);
+    const sys = SYS.replace('{FOCUS_WORDS}', focus.join(', '));
+
     const res = await engine.chat.completions.create({
       messages:[
-        {role:"system",content:SYS},
-        {role:"user",content:`Context:\n${ctx}\n\nTranscript:\n${snippet}\n\nCoach reply:`}
+        {role:"system",content:sys},
+        {role:"user",content:`Context:\n${ctx}\n\nTranscript:\n${snippet}\n\nFocus words to use in CLARIFY: ${focus.join(', ')}\n\nCoach reply:`}
       ],
-      temperature:0.45, max_tokens:220
+      temperature:0.55,
+      max_tokens:220,
+      presence_penalty:0.6,
+      frequency_penalty:0.3
     });
     return res.choices[0].message.content;
   }
 
+  // ---- Click handler
   go.onclick = async ()=>{
     if(!engine){ out.innerHTML='<div class="bubble">Model still loading.</div>'; return; }
     const pw=document.getElementById('pw').value.trim();
