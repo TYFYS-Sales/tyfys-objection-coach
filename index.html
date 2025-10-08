@@ -110,14 +110,24 @@ progress{width:100%}
   await initEngine(modelSel.value);
   modelSel.onchange = async ()=>{ go.disabled=true; await initEngine(modelSel.value); };
 
-  const SYS="You are a TYFYS VA-claims objection coach. Reply in 3 parts: 1) Acknowledge 2) One clarifying question 3) Offer two concise options. No legal advice. ≤80 words. Calm. Factual.";
+  const SYS = `
+You are a VA-disability sales objection coach for Thank You For Your Service (TYFYS).
+Respond in three clearly separated sections using line breaks:
+1️⃣ Acknowledge — empathetic but professional. Avoid fluff.
+2️⃣ Clarify — ask one focused question to understand the veteran’s concern.
+3️⃣ Offer — present two short, realistic options that align with TYFYS services.
+Keep answers under 120 words. Never include "Here's a 3-part response"—just give the formatted answer directly. 
+Do not number paragraphs with "1. 2. 3." — use bold section headers instead.
+No legal advice. Write for spoken delivery.`;
 
   async function generate(snippet,matches){
     const ctx = matches.map(m=>`Objection: ${m.objection}\nBestReply: ${m.rebuttal}\nProof: ${m.proof||""}`).join("\n\n");
     const res = await engine.chat.completions.create({
-      messages:[{role:"system",content:SYS},{role:"user",content:`Context:\n${ctx}\n\nTranscript:\n${snippet}\n\nCoach reply:`}],
-      temperature:0.2, max_tokens:140
-    });
+  messages:[{role:"system",content:SYS},{role:"user",content:`Context:\n${ctx}\n\nTranscript:\n${snippet}\n\nCoach reply:`}],
+  temperature:0.5,
+  max_tokens:220
+});
+
     return res.choices[0].message.content;
   }
 
